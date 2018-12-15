@@ -2,13 +2,38 @@ kind: pipeline
 name: default
 
 steps:
-- name: docker
+- name: build-on-branch
   image: plugins/docker
   settings:
     repo: mrupgrade/gitops-app
-    tags: latest
+    tags:
+    - ${DRONE_BUILD_NUMBER}
+    - ${DRONE_COMMIT_SHA}
     username:
       from_secret: docker_username
     password:
       from_secret: docker_password
+  when:
+    event:
+    - push
+    branch:
+      exclude:
+      - master
+      - dev
+      - stg
 
+
+- name: build-on-tag
+  image: plugins/docker
+  settings:
+    repo: mrupgrade/gitops-app
+    tags:
+    - ${DRONE_BUILD_NUMBER}
+    - ${DRONE_TAG}
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+  when:
+    event:
+    - tag
